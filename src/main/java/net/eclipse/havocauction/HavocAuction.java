@@ -1,6 +1,8 @@
 package net.eclipse.havocauction;
 
 import net.eclipse.havocauction.command.AuctionCommand;
+import net.eclipse.havocauction.command.ToggleCommand;
+import net.eclipse.havocauction.integration.AuctionPlaceholders;
 import net.eclipse.havocauction.economy.EconomyHook;
 import net.eclipse.havocauction.manager.AuctionManager;
 import net.eclipse.havocauction.manager.DropJob;
@@ -87,6 +89,17 @@ public final class HavocAuction extends JavaPlugin {
             command.setTabCompleter(executor);
         }
 
+        PluginCommand alertsToggle = getCommand("toggleauctionalerts");
+        if (alertsToggle != null) {
+            alertsToggle.setExecutor(new ToggleCommand(this, ToggleCommand.Kind.ALERTS));
+        }
+        PluginCommand fastToggle = getCommand("togglefastauction");
+        if (fastToggle != null) {
+            fastToggle.setExecutor(new ToggleCommand(this, ToggleCommand.Kind.FAST));
+        }
+
+        registerPlaceholders();
+
         long tickSeconds = Math.max(5L, getConfig().getLong("AUCTION.UPKEEP-SECONDS", 60L));
         getServer().getScheduler().runTaskTimer(this, auction::tick, tickSeconds * 20L, tickSeconds * 20L);
 
@@ -97,6 +110,23 @@ public final class HavocAuction extends JavaPlugin {
         }, saveTicks, saveTicks);
 
         getLogger().info("HavocAuction enabled. Dialogs need Paper/Purpur 1.21.7+ and a 1.21.6+ client.");
+    }
+
+    /** PlaceholderAPI is optional; skip quietly when it is not installed. */
+    private void registerPlaceholders() {
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") == null) return;
+        try {
+            new AuctionPlaceholders(this).register();
+            getLogger().info("Registered PlaceholderAPI expansion 'havocauction'.");
+        } catch (Throwable ex) {
+            getLogger().warning("Could not register placeholders: " + ex.getMessage());
+        }
+    }
+
+    /** ON/OFF text used by the placeholders, styled in config. */
+    public String statusText(boolean enabled) {
+        return getConfig().getString("PLACEHOLDERS." + (enabled ? "ENABLED-TEXT" : "DISABLED-TEXT"),
+                enabled ? "ON" : "OFF");
     }
 
     private void runAutoImport() {

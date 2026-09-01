@@ -86,6 +86,36 @@ priced at 32,000.
 - `HISTORY-KEEP-DAYS` (default 30) purges old sold rows. Each carries a serialised item, so
   this is the memory dial — raise it for a longer log, lower it on a busy server.
 
+## External settings menus (PlaceholderAPI)
+
+Registers the `havocauction` expansion when PlaceholderAPI is installed, plus standalone
+toggle commands, so a settings menu can drive both preferences directly.
+
+| Placeholder | Value |
+| --- | --- |
+| `%havocauction_alerts_status%` | Styled ON / OFF |
+| `%havocauction_fast_status%` | Styled ON / OFF for fast mode |
+| `%havocauction_alerts_raw%` / `%havocauction_fast_raw%` | `true` / `false` |
+| `%havocauction_listings%` | Live listings |
+| `%havocauction_collectable%` | Listings waiting to collect |
+| `%havocauction_listed_value%` | Asking value of your live listings |
+| `%havocauction_total_made%` / `%havocauction_total_spent%` / `%havocauction_net%` | Lifetime totals |
+| `%havocauction_sales%` / `%havocauction_purchases%` | Lifetime counts |
+| `%havocauction_board_size%` | Listings on the board right now (no player needed) |
+
+Commands: `/toggleauctionalerts` (alias `/ahalerts`), `/togglefastauction` (alias
+`/fastauction`).
+
+The ON/OFF text is config-driven, since it renders inside whatever menu plugin reads it:
+
+```yaml
+PLACEHOLDERS:
+  ENABLED-TEXT: "<green>ON"
+  DISABLED-TEXT: "<red>OFF"
+```
+
+Use `&a` / `&c` instead if your menu expects legacy colour codes, or plain `ON` / `OFF`.
+
 ## Importing from DonutAuction
 
 Drop the old `auction.db` into `plugins/HavocAuction/` as `import.db` and start the server,

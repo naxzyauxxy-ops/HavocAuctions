@@ -4,12 +4,20 @@ main: net.eclipse.havocauction.HavocAuction
 api-version: '1.21'
 author: Eclipse
 description: Player auction house using the 1.21.6+ Dialog API, with Vault economy.
-softdepend: [Vault]
+softdepend: [Vault, PlaceholderAPI]
 commands:
   auction:
     description: Open the auction house
     usage: /ah [sell <price>|reload|import]
     aliases: [ah, havocauction]
+  toggleauctionalerts:
+    description: Toggle auction sale notifications
+    usage: /toggleauctionalerts
+    aliases: [ahalerts]
+  togglefastauction:
+    description: Toggle auction confirmation screens
+    usage: /togglefastauction
+    aliases: [fastauction]
 permissions:
   havocauction.use:
     description: Allows using /ah
