@@ -1,0 +1,19 @@
+name: HavocAuction
+version: '${project.version}'
+main: net.eclipse.havocauction.HavocAuction
+api-version: '1.21'
+author: Eclipse
+description: Player auction house using the 1.21.6+ Dialog API, with Vault economy.
+softdepend: [Vault]
+commands:
+  auction:
+    description: Open the auction house
+    usage: /ah [sell <price>|reload|import]
+    aliases: [ah, havocauction]
+permissions:
+  havocauction.use:
+    description: Allows using /ah
+    default: true
+  havocauction.admin:
+    description: Reload, import, bypass listing limits, cancel any listing
+    default: op

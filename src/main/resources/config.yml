@@ -1,0 +1,118 @@
+# =====================================================
+#              HavocAuction - config.yml
+# =====================================================
+# Never paste this file publicly with real credentials in it.
+
+DEBUG: false
+
+DATABASE:
+  TYPE: "SQLITE" # SQLITE or MYSQL
+  MYSQL:
+    HOST: "127.0.0.1"
+    PORT: 3306
+    DATABASE: "havocauction"
+    USER: "CHANGE_ME"
+    PASSWORD: "CHANGE_ME"
+    USE-SSL: false
+
+AUCTION:
+  # How long a listing stays on the board. 604800 = 7 days.
+  DURATION-SECONDS: 604800
+  MIN-PRICE: 10.0
+  MAX-PRICE: 10000000000.0
+  # Live listings one player may hold. 0 = unlimited.
+  MAX-LISTINGS-PER-PLAYER: 0
+  # Charged to the seller when the listing is created, win or lose. 0 disables.
+  LISTING-FEE-PERCENT: 0.0
+  LISTING-FEE-FLAT: 0.0
+  # Cut taken from the sale price before the seller is paid.
+  TAX-PERCENT: 0.0
+  # Announce listings at or above this price. 0 disables.
+  BROADCAST-PRICE-THRESHOLD: 500000.0
+  # Show 1.23m instead of 1,230,000. Input always accepts both.
+  ABBREVIATE-NUMBERS: true
+  # Sold and collected rows are kept this long so the transaction log has something to
+  # show, then purged. They hold a serialised item each, so this is the memory dial.
+  HISTORY-KEEP-DAYS: 30
+  UPKEEP-SECONDS: 60
+  SAVE-INTERVAL-SECONDS: 30
+  DROP:
+    MAX-STACKS-PER-TICK: 24
+    PAGE-BATCH: 5
+
+DIALOG:
+  COLUMNS: 3
+  BUTTON-WIDTH: 200
+  ITEM-SIZE: 48
+  LISTINGS-PER-PAGE: 21
+  COLLECT-PER-PAGE: 15
+
+BLACKLIST-ITEMS:
+  - "COMMAND_BLOCK"
+  - "CHAIN_COMMAND_BLOCK"
+  - "REPEATING_COMMAND_BLOCK"
+  - "COMMAND_BLOCK_MINECART"
+  - "STRUCTURE_BLOCK"
+  - "STRUCTURE_VOID"
+  - "JIGSAW"
+  - "BARRIER"
+  - "LIGHT"
+  - "BEDROCK"
+  - "DEBUG_STICK"
+  - "KNOWLEDGE_BOOK"
+
+# Migration from the original DonutAuction plugin.
+# Drop its auction.db in here as the FILE below and start the server, or run /ah import.
+# Re-running is safe: legacy ids are preserved, so anything already imported is skipped.
+#
+# The importer moves no money and hands out no items. Sold rows import as history so the
+# transaction log and lifetime totals survive. Active listings go back on the board.
+# Cancelled and expired rows keep their items waiting for collection, as before.
+#
+# Remove the old plugin first so the two are not running against one economy.
+IMPORT:
+  ENABLED: true
+  FILE: "import.db"
+  # Sold/collected rows. Turn off for a clean start with no history.
+  IMPORT-HISTORY: true
+  IMPORT-PROFILES: true
+  EXPIRY:
+    # EXTEND: listings that expired while the old plugin was down go back on the board.
+    # KEEP:   they import as expired, item waiting for the seller to collect.
+    MODE: EXTEND
+    EXTEND-DAYS: 7
+  RENAME-WHEN-DONE: true
+
+MESSAGES:
+  PREFIX: ""
+  NO-PERMISSION: "&#f40d0dYou don't have permission to do that."
+  PLAYERS-ONLY: "&#f40d0dThis command can only be used by players."
+  RELOADED: "&#f40d0dConfiguration reloaded."
+  NO-ECONOMY: "&#f40d0dNo Vault economy provider is installed - the auction is disabled."
+  SELL-USAGE: "&#f40d0dUsage: /ah sell <price> &7(1k, 2.5m and so on work)"
+  NO-ITEM: "&#f40d0dHold the item you want to sell."
+  ITEM-BLACKLISTED: "&#f40d0dYou cannot sell that item."
+  PRICE-INVALID: "&#f40d0dThat is not a valid price."
+  PRICE-LOW: "&#f40d0dThe minimum price is ${min}."
+  PRICE-HIGH: "&#f40d0dThe maximum price is ${max}."
+  MAX-LISTINGS-LIMIT: "&#f40d0dYou cannot list more than {limit} items at once."
+  CANNOT-AFFORD-FEE: "&#f40d0dYou need ${fee} for the listing fee."
+  ECONOMY-ERROR-WITHDRAW: "&#f40d0dError while withdrawing money."
+  NOT-ENOUGH-MONEY: "&#f40d0dYou need ${price} to buy that."
+  INVENTORY-FULL: "&#f40d0dMake space in your inventory first."
+  LISTED: "&#f40d0dListed {amount} {item} for ${price}."
+  LISTING-BROADCAST: "&#f40d0d{player} &7listed &#f40d0d{amount} {item} &7for &#f40d0d${price}"
+  LISTING-UNAVAILABLE: "&#f40d0dThat listing is no longer available."
+  LISTING-CANCELLED: "&#f40d0dYou pulled {item} off the auction."
+  LISTING-COLLECTED: "&#f40d0dYou collected {amount} {item}."
+  LISTING-EXPIRED: "&#f40d0d{amount} of your listings expired. The items are waiting for you."
+  OWN-LISTING: "&#f40d0dYou cannot buy your own listing."
+  BUY-SUCCESS: "&#f40d0dYou bought {amount} {item} for ${price}."
+  SALE-NOTIFY: "&#f40d0d{buyer} bought your {item} for ${price} &7(you received ${payout})"
+  NOTHING-TO-COLLECT: "&#f40d0dNothing is waiting for you."
+  COLLECTED-ALL: "&#f40d0dCollected {amount} listings."
+  DROPPED-ALL: "&#f40d0dDropped {amount} items at your feet."
+  ALERTS-ON: "&#f40d0dYou will be told when your items sell."
+  ALERTS-OFF: "&#f40d0dSale notifications turned off."
+  FAST-BUY-ON: "&#f40d0dConfirmation screens off - buying and listing are instant."
+  FAST-BUY-OFF: "&#f40d0dConfirmation screens on."
