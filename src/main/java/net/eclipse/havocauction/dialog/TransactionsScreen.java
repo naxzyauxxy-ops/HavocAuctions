@@ -52,7 +52,7 @@ public class TransactionsScreen extends Screen {
         for (Listing listing : all) {
             if (listing.getSellerName().toLowerCase(Locale.ROOT).contains(query)
                     || listing.getBuyerName().toLowerCase(Locale.ROOT).contains(query)
-                    || listing.getItemName().toLowerCase(Locale.ROOT).contains(query)) {
+                    || listing.getTypeName().toLowerCase(Locale.ROOT).contains(query)) {
                 matched.add(listing);
             }
         }
@@ -106,7 +106,7 @@ public class TransactionsScreen extends Screen {
 
         for (Listing listing : slice(results, session.getTransactionsPage(), perPage())) {
             boolean sold = listing.getSeller().equals(player.getUniqueId());
-            buttons.add(configButton(sold ? "SALE" : "PURCHASE", Placeholders.of(listing),
+            buttons.add(configButton(sold ? "SALE" : "PURCHASE", Placeholders.of(plugin, listing),
                     (view, audience) -> {
                         if (listing.isContainer()) {
                             click();

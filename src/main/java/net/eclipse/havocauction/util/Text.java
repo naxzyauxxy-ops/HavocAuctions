@@ -76,6 +76,22 @@ public final class Text {
         return out;
     }
 
+    /**
+     * Applies placeholders and drops any line that had content before substitution but is
+     * blank afterwards. Lets an optional row like {durability_line} vanish entirely
+     * instead of leaving an empty gap, while deliberate "" spacer lines are kept.
+     */
+    public static List<String> applyPruned(List<String> input, Map<String, String> placeholders) {
+        List<String> out = new ArrayList<>();
+        if (input == null) return out;
+        for (String line : input) {
+            String resolved = apply(line, placeholders);
+            if (!line.isBlank() && strip(resolved).isBlank()) continue;
+            out.add(resolved);
+        }
+        return out;
+    }
+
     /** DIAMOND_PICKAXE -> Diamond Pickaxe */
     public static String pretty(String constant) {
         if (constant == null || constant.isEmpty()) return "";

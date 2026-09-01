@@ -58,7 +58,7 @@ public class ContainerPreviewScreen extends Screen {
     @Override
     protected Component title() {
         Listing listing = listing();
-        return titleFrom(listing == null ? Map.of() : Placeholders.of(listing));
+        return titleFrom(listing == null ? Map.of() : Placeholders.of(plugin, listing));
     }
 
     @Override

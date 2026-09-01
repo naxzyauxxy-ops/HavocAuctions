@@ -6,6 +6,15 @@
 # Hex colours (&#f40d0d) and legacy codes (&7) both work.
 # COLUMNS on a dialog overrides DIALOG.COLUMNS in config.yml.
 
+# Optional rows reused across screens. They disappear when they do not apply, so a
+# listing with no durability simply has no durability row.
+LINES:
+  DURABILITY: "&7Durability: &f{durability} &8({durability_percent}%)"
+  # Shown when the seller renamed the item, so buyers always see what it really is.
+  RENAMED: "&c! &7Renamed. Actually a &f{type}"
+  # Appended to the button label of a renamed item.
+  RENAMED-TAG: " &8({type})"
+
 NAMES:
   SORT:
     RECENTLY-LISTED: "Recently Listed"
@@ -39,10 +48,13 @@ DIALOGS:
     EMPTY: "&7Nothing matches those filters."
     BUTTONS:
       LISTING:
-        LABEL: "&f{amount}x {item} &8- &#f40d0d${price}"
+        LABEL: "&f{amount}x {item}{renamed_tag} &8- &#f40d0d${price}"
         TOOLTIP:
           - "&#f40d0d{amount}x {item}"
+          - "{renamed_line}"
+          - "&7Type: &f{type}"
           - "&7Seller: &f{seller}"
+          - "{durability_line}"
           - ""
           - "&7Price: &#f40d0d${price}"
           - "&7Each: &#f40d0d${unit_price}"
@@ -50,10 +62,12 @@ DIALOGS:
           - "&fClick to buy"
           - "&8Ends in {expires}"
       OWN-LISTING:
-        LABEL: "&f{amount}x {item} &8- &7ʏᴏᴜʀѕ"
+        LABEL: "&f{amount}x {item}{renamed_tag} &8- &7ʏᴏᴜʀѕ"
         TOOLTIP:
           - "&#f40d0dYour listing"
           - "&f{amount}x {item}"
+          - "{renamed_line}"
+          - "{durability_line}"
           - "&7Price: &#f40d0d${price}"
           - ""
           - "&fClick to manage it"
@@ -105,7 +119,10 @@ DIALOGS:
     COLUMNS: 2
     BODY:
       - "&f{amount}x {item}"
+      - "{renamed_line}"
+      - "&7Type: &f{type}"
       - "&7Sold by &f{seller}"
+      - "{durability_line}"
       - ""
       - "&7Price: &#f40d0d${price}"
       - "&7Per item: &#f40d0d${unit_price}"
@@ -147,9 +164,11 @@ DIALOGS:
     EMPTY: "&7You have nothing listed. Hold an item and hit Sell."
     BUTTONS:
       LISTING:
-        LABEL: "&f{amount}x {item} &8- &#f40d0d${price}"
+        LABEL: "&f{amount}x {item}{renamed_tag} &8- &#f40d0d${price}"
         TOOLTIP:
           - "&f{amount}x {item}"
+          - "{renamed_line}"
+          - "{durability_line}"
           - "&7Price: &#f40d0d${price}"
           - "&7Each: &#f40d0d${unit_price}"
           - ""
@@ -190,6 +209,8 @@ DIALOGS:
     COLUMNS: 2
     BODY:
       - "&f{amount}x {item}"
+      - "{renamed_line}"
+      - "{durability_line}"
       - "&7Price: &#f40d0d${price}"
       - "&7Per item: &#f40d0d${unit_price}"
       - ""
@@ -266,9 +287,11 @@ DIALOGS:
     EMPTY: "&7Nothing waiting for you."
     BUTTONS:
       LOOT:
-        LABEL: "&f{amount}x {item}"
+        LABEL: "&f{amount}x {item}{renamed_tag}"
         TOOLTIP:
           - "&f{amount}x {item}"
+          - "{renamed_line}"
+          - "{durability_line}"
           - "&7Was listed for &#f40d0d${price}"
           - "&8{status}"
           - ""

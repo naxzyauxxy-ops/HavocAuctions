@@ -36,7 +36,7 @@ public class ManageListingScreen extends Screen {
     @Override
     protected Component title() {
         Listing listing = listing();
-        return titleFrom(listing == null ? Map.of() : Placeholders.of(listing));
+        return titleFrom(listing == null ? Map.of() : Placeholders.of(plugin, listing));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ManageListingScreen extends Screen {
         }
         List<DialogBody> body = new ArrayList<>();
         body.add(itemBody(listing.getItemCopy()));
-        body.addAll(Dialogs.body(lines("BODY"), Placeholders.of(listing)));
+        body.addAll(Dialogs.body(lines("BODY"), Placeholders.of(plugin, listing)));
         return body;
     }
 
@@ -65,7 +65,7 @@ public class ManageListingScreen extends Screen {
             return buttons;
         }
 
-        Map<String, String> placeholders = Placeholders.of(listing);
+        Map<String, String> placeholders = Placeholders.of(plugin, listing);
         buttons.add(configButton("CANCEL-LISTING", placeholders, (view, audience) -> {
             AuctionManager.Result result = plugin.auction().cancel(player, listingId);
             tell(result.message());

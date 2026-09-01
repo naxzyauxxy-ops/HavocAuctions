@@ -42,19 +42,26 @@ public class AuctionScreen extends Screen {
 
         String lowered = session.getQuery().toLowerCase(Locale.ROOT);
         Category filter = session.getFilter();
+        // Off by default: matching renamed items would let a block of dirt called
+        // "Elytra" answer an elytra search.
+        boolean searchCustomNames = plugin.getConfig().getBoolean("AUCTION.SEARCH-CUSTOM-NAMES", false);
+
         List<Listing> matched = new ArrayList<>();
         for (Listing listing : plugin.auction().board()) {
             if (!filter.matches(listing.getMaterial())) continue;
-            if (!lowered.isEmpty()
-                    && !listing.getItemName().toLowerCase(Locale.ROOT).contains(lowered)
-                    && !listing.getSellerName().toLowerCase(Locale.ROOT).contains(lowered)) {
-                continue;
-            }
+            if (!lowered.isEmpty() && !matches(listing, lowered, searchCustomNames)) continue;
             matched.add(listing);
         }
         matched.sort(session.getSort().getComparator());
         session.cacheBoard(matched, version);
         return matched;
+    }
+
+    private boolean matches(Listing listing, String query, boolean searchCustomNames) {
+        if (listing.getTypeName().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (listing.getSellerName().toLowerCase(Locale.ROOT).contains(query)) return true;
+        return searchCustomNames && listing.getCustomName() != null
+                && listing.getCustomName().toLowerCase(Locale.ROOT).contains(query);
     }
 
     private Map<String, String> screen(List<Listing> results) {
@@ -101,7 +108,7 @@ public class AuctionScreen extends Screen {
 
         for (Listing listing : slice(results, session.getPage(), perPage())) {
             boolean mine = listing.getSeller().equals(player.getUniqueId());
-            Map<String, String> placeholders = Placeholders.of(listing);
+            Map<String, String> placeholders = Placeholders.of(plugin, listing);
             buttons.add(configButton(mine ? "OWN-LISTING" : "LISTING", placeholders, (view, audience) -> {
                 click();
                 // Your own listing goes to its management screen rather than a purchase

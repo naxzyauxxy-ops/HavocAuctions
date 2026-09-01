@@ -4,6 +4,7 @@ import net.eclipse.havocauction.util.ItemNames;
 import net.eclipse.havocauction.util.ItemSerializer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 
 import java.util.UUID;
 
@@ -18,8 +19,14 @@ public class Listing {
     private transient ItemStack cachedItem;
     /** Kept separate so the board can filter and search without decoding every item. */
     private final String itemName;
+    /** The real item type. Search uses this, never the display name. */
+    private final String typeName;
+    /** Non-null only when the seller renamed the item. */
+    private final String customName;
     private final Material material;
     private final int amount;
+    private final int damage;
+    private final short maxDurability;
 
     private final double price;
 
@@ -48,8 +55,14 @@ public class Listing {
 
         ItemStack item = getItem();
         this.itemName = ItemNames.display(item);
+        this.typeName = ItemNames.typeName(item);
+        this.customName = ItemNames.customName(item);
         this.material = item.getType();
         this.amount = item.getAmount();
+        this.maxDurability = item.getType().getMaxDurability();
+        this.damage = item.getItemMeta() instanceof Damageable damageable && damageable.hasDamage()
+                ? damageable.getDamage()
+                : 0;
     }
 
     public static Listing create(UUID seller, String sellerName, ItemStack item,
@@ -95,6 +108,36 @@ public class Listing {
 
     public String getItemName() {
         return itemName;
+    }
+
+    /** Real item type, e.g. "Dirt" even when the seller called it "Elytra". */
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public boolean isRenamed() {
+        return customName != null && !customName.equalsIgnoreCase(typeName);
+    }
+
+    public boolean hasDurability() {
+        return maxDurability > 0;
+    }
+
+    public int getDurabilityRemaining() {
+        return Math.max(0, maxDurability - damage);
+    }
+
+    public int getMaxDurability() {
+        return maxDurability;
+    }
+
+    public int getDurabilityPercent() {
+        if (maxDurability <= 0) return 100;
+        return (int) Math.round(getDurabilityRemaining() * 100.0D / maxDurability);
     }
 
     public Material getMaterial() {

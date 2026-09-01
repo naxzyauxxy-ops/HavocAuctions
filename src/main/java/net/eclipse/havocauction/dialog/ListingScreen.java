@@ -35,7 +35,7 @@ public class ListingScreen extends Screen {
     }
 
     private Map<String, String> placeholders(Listing listing) {
-        Map<String, String> map = Placeholders.of(listing);
+        Map<String, String> map = Placeholders.of(plugin, listing);
         map.put("balance", NumberUtil.money(plugin.economy().balance(player)));
         map.put("after", NumberUtil.money(plugin.economy().balance(player) - listing.getPrice()));
         return map;

@@ -29,6 +29,10 @@ AUCTION:
   TAX-PERCENT: 0.0
   # Announce listings at or above this price. 0 disables.
   BROADCAST-PRICE-THRESHOLD: 500000.0
+  # Whether search also matches custom item names. Off by default: with it on, anyone
+  # can rename a block of dirt to "Elytra" and have it answer an elytra search.
+  # Searching always matches the real item type and the seller's name.
+  SEARCH-CUSTOM-NAMES: false
   # Show 1.23m instead of 1,230,000. Input always accepts both.
   ABBREVIATE-NUMBERS: true
   # Sold and collected rows are kept this long so the transaction log has something to

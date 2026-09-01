@@ -197,6 +197,11 @@ public final class HavocAuction extends JavaPlugin {
         return dialogs.getString("NAMES.FILTER." + category.name(), Text.pretty(category.name()));
     }
 
+    /** Reusable line templates from dialogs.yml LINES. */
+    public String line(String key, String fallback) {
+        return dialogs.getString("LINES." + key, fallback);
+    }
+
     public String message(String path) {
         String prefix = getConfig().getString("MESSAGES.PREFIX", "");
         String message = getConfig().getString("MESSAGES." + path, "");

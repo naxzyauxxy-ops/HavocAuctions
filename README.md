@@ -59,6 +59,42 @@ Search uses the dialog's own text field, so it goes client-to-server with the bu
 and never appears in chat or in chat-logging plugins. Same for the history search and the
 sell price field.
 
+## Renamed items and search
+
+Search matches the **real item type**, never the custom display name. Otherwise anyone can
+rename a block of dirt to "Elytra", list it for millions, and have it answer every elytra
+search — the display name is attacker-controlled text, so it is not something to key a
+search on.
+
+Renamed listings are also flagged wherever they appear: the button label gets the real type
+appended, and the tooltip carries a red warning line plus a `Type:` row.
+
+```yaml
+AUCTION:
+  SEARCH-CUSTOM-NAMES: false
+```
+
+Turning it on makes search match custom names too. Only do that if you accept the above.
+The seller's name is always searchable either way.
+
+## Durability
+
+Damaged items show their durability on the board, the buy screen, your listings and the
+collect screen: `Durability: 384/432 (89%)`.
+
+The row is a template in `dialogs.yml`, and lines that resolve to nothing are dropped, so
+items without durability simply have no durability row rather than an empty gap:
+
+```yaml
+LINES:
+  DURABILITY: "&7Durability: &f{durability} &8({durability_percent}%)"
+  RENAMED: "&c! &7Renamed. Actually a &f{type}"
+  RENAMED-TAG: " &8({type})"
+```
+
+Placeholders: `{durability}`, `{durability_percent}`, `{type}`, `{custom_name}`,
+`{renamed}`, `{durability_line}`, `{renamed_line}`, `{renamed_tag}`.
+
 ## Fast mode
 
 Carried over from the legacy `fast_auction` flag: toggling it on Your Items skips both the

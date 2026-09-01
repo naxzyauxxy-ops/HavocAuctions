@@ -88,9 +88,8 @@ public final class Dialogs {
                                           DialogActionCallback callback) {
         String label = section == null ? "Button" : section.getString("LABEL", "Button");
         List<String> tooltip = section == null ? List.of() : section.getStringList("TOOLTIP");
-        Component tooltipComponent = tooltip.isEmpty()
-                ? null
-                : Text.multiline(Text.apply(tooltip, placeholders));
+        List<String> resolved = Text.applyPruned(tooltip, placeholders);
+        Component tooltipComponent = resolved.isEmpty() ? null : Text.multiline(resolved);
         return button(Text.component(Text.apply(label, placeholders)), tooltipComponent, width, callback);
     }
 
@@ -110,7 +109,7 @@ public final class Dialogs {
     public static List<DialogBody> body(List<String> lines, Map<String, String> placeholders) {
         List<DialogBody> body = new ArrayList<>();
         if (lines == null) return body;
-        for (String line : Text.apply(lines, placeholders)) {
+        for (String line : Text.applyPruned(lines, placeholders)) {
             body.add(DialogBody.plainMessage(Text.component(line)));
         }
         return body;
