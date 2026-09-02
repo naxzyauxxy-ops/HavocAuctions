@@ -105,6 +105,14 @@ public class AuctionCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        // Same reason as /orders search: dialog text fields are unreliable on Bedrock.
+        if (args.length > 0 && args[0].equalsIgnoreCase("search")) {
+            String query = args.length > 1
+                    ? String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length))
+                    : "";
+            plugin.sessions().get(player).setQuery(query);
+        }
+
         new AuctionScreen(plugin, player).show();
         return true;
     }
@@ -115,6 +123,7 @@ public class AuctionCommand implements CommandExecutor, TabCompleter {
         List<String> options = new ArrayList<>();
         if (args.length == 1) {
             options.add("sell");
+            options.add("search");
             if (sender.hasPermission("havocauction.admin")) {
                 options.add("reload");
                 options.add("import");

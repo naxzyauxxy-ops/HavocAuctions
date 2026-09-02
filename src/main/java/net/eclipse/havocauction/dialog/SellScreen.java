@@ -97,10 +97,15 @@ public class SellScreen extends Screen {
         List<ActionButton> buttons = new ArrayList<>();
 
         buttons.add(configButton("CONFIRM", placeholders, (view, audience) -> {
-            Double price = NumberUtil.parse(view.getText(PRICE));
+            String typed = view.getText(PRICE);
+            // A blank box on Bedrock is Geyser losing the value, not the player asking
+            // for a free listing. Fall back to any price already set, then the command.
+            Double price = typed == null || typed.isBlank()
+                    ? (session.getDraftPrice() > 0 ? session.getDraftPrice() : null)
+                    : NumberUtil.parse(typed);
             if (price == null || price <= 0) {
                 deny();
-                tell(plugin.message("PRICE-INVALID"));
+                tell(plugin.message(isBedrock() ? "SELL-USE-COMMAND" : "PRICE-INVALID"));
                 show();
                 return;
             }
@@ -123,7 +128,8 @@ public class SellScreen extends Screen {
 
         buttons.add(configButton("PRICE-PER-ITEM", placeholders, (view, audience) -> {
             // Treat the typed number as a per-item price and scale it to the stack.
-            Double each = NumberUtil.parse(view.getText(PRICE));
+            String typedEach = view.getText(PRICE);
+            Double each = typedEach == null || typedEach.isBlank() ? null : NumberUtil.parse(typedEach);
             ItemStack held = held();
             if (each == null || each <= 0 || held == null) {
                 deny();

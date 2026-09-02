@@ -96,7 +96,7 @@ public class AuctionScreen extends Screen {
 
     @Override
     protected ActionButton exitButton() {
-        return Dialogs.closeButton(button("CLOSE"), screen(results()), width());
+        return Dialogs.closeButton(button("CLOSE"), screen(results()), width(), style());
     }
 
     @Override
