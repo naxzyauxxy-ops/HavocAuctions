@@ -9,6 +9,8 @@
 # Optional rows reused across screens. They disappear when they do not apply, so a
 # listing with no durability simply has no durability row.
 LINES:
+  # A thin rule used to break the header away from the buttons.
+  SEPARATOR: "&8&m                                                  "
   DURABILITY: "&7Durability: &f{durability} &8({durability_percent}%)"
   # Shown when the seller renamed the item, so buyers always see what it really is.
   RENAMED: "&c! &7Renamed. Actually a &f{type}"
@@ -40,15 +42,15 @@ DIALOGS:
 
   AUCTION:
     TITLE: "&#f40d0dᴀᴜᴄᴛɪᴏɴ"
-    COLUMNS: 3
+    COLUMNS: 2
     BODY:
-      - "&7Page &f{page}&7/&f{pages} &8| &7{results} listings"
-      - "&7Sort &f{sort} &8| &7Filter &f{filter} &8| &7Search &f{query}"
-      - "&7Balance: &#f40d0d${balance}"
+      - "&7{results} listings &8\u00b7 &7page &f{page}&8/&f{pages} &8\u00b7 &7balance &a${balance}"
+      - "&8Sort: &7{sort}   &8Filter: &7{filter}   &8Search: &7{query}"
+      - "{separator}"
     EMPTY: "&7Nothing matches those filters."
     BUTTONS:
       LISTING:
-        LABEL: "&f{amount}x {item}{renamed_tag} &8- &#f40d0d${price}"
+        LABEL: "&f{amount}\u00d7 {item}{renamed_tag}\n&a${price} &8\u00b7 &7${unit_price} each"
         TOOLTIP:
           - "&#f40d0d{amount}x {item}"
           - "{renamed_line}"
@@ -62,7 +64,7 @@ DIALOGS:
           - "&fClick to buy"
           - "&8Ends in {expires}"
       OWN-LISTING:
-        LABEL: "&f{amount}x {item}{renamed_tag} &8- &7ʏᴏᴜʀѕ"
+        LABEL: "&7{amount}\u00d7 {item}{renamed_tag}\n&8yours \u00b7 &7${price}"
         TOOLTIP:
           - "&#f40d0dYour listing"
           - "&f{amount}x {item}"
@@ -90,7 +92,7 @@ DIALOGS:
           - "&7Type privately - nobody sees this"
           - "&7Currently: &f{query}"
       MY-LISTINGS:
-        LABEL: "&#f40d0dʏᴏᴜʀ ɪᴛᴇᴍѕ"
+        LABEL: "&#f40d0d\u2756 ʏᴏᴜʀ ɪᴛᴇᴍѕ"
         TOOLTIP: [ "&7Sell, manage, collect and view history" ]
       CLOSE:
         LABEL: "&7ᴄʟᴏѕᴇ"
@@ -136,17 +138,31 @@ DIALOGS:
         LABEL: "&#f40d0dʙᴜʏ ꜰᴏʀ ${price}"
         TOOLTIP: [ "&7Buy this listing" ]
       PREVIEW:
-        LABEL: "&#f40d0dᴘʀᴇᴠɪᴇᴡ ᴄᴏɴᴛᴇɴᴛѕ"
-        TOOLTIP: [ "&7See what is inside before buying" ]
+        LABEL: "&#f40d0d\u2315 ᴘʀᴇᴠɪᴇᴡ"
+        TOOLTIP:
+          - "&7Shulker contents, map art,"
+          - "&7enchantments and durability"
       BACK:
         LABEL: "&7ʙᴀᴄᴋ"
         TOOLTIP: [ ]
 
   CONTAINER-PREVIEW:
-    TITLE: "&#f40d0dᴄᴏɴᴛᴇɴᴛѕ &8-> &f{item}"
+    TITLE: "&#f40d0dᴘʀᴇᴠɪᴇᴡ &8\u00b7 &f{item}"
     COLUMNS: 2
-    LINE: "&7- &f{amount}x {item}"
-    EMPTY: "&7This container is empty."
+    BODY:
+      - "&f{amount}\u00d7 {item}"
+      - "{renamed_line}"
+      - "{durability_line}"
+      - "{separator}"
+    LINE: "&7\u2022 &f{amount}\u00d7 {item}"
+    ENCHANT-LINE: "&7\u2022 &f{enchantment} {level}"
+    MORE: "&8...and {count} more stacks"
+    MAP-HEADER: "&#f40d0dMap art"
+    MAP-HINT: "&7Hover the map above to see the art itself."
+    MAP-LINES:
+      - "&7Map &8#&f{id} &8\u00b7 &7scale &f{scale}"
+      - "&7World: &f{world} &8\u00b7 &7locked: &f{locked}"
+    EMPTY: "&7Nothing else to show for this item."
     BUTTONS:
       BACK:
         LABEL: "&7ʙᴀᴄᴋ"
@@ -156,15 +172,15 @@ DIALOGS:
 
   MY-LISTINGS:
     TITLE: "&#f40d0dʏᴏᴜʀ ɪᴛᴇᴍѕ"
-    COLUMNS: 3
+    COLUMNS: 2
     BODY:
-      - "&7{count} live listings worth &#f40d0d${value}"
-      - "&7{collectable} listings waiting to collect &8({collectable_items} items)"
-      - "&7Page &f{page}&7/&f{pages}"
+      - "&7{count} live listings &8\u00b7 &7worth &a${value}"
+      - "&7{collectable} waiting to collect &8({collectable_items} items)"
+      - "{separator}"
     EMPTY: "&7You have nothing listed. Hold an item and hit Sell."
     BUTTONS:
       LISTING:
-        LABEL: "&f{amount}x {item}{renamed_tag} &8- &#f40d0d${price}"
+        LABEL: "&f{amount}\u00d7 {item}{renamed_tag}\n&a${price} &8\u00b7 &7${unit_price} each"
         TOOLTIP:
           - "&f{amount}x {item}"
           - "{renamed_line}"
@@ -222,8 +238,8 @@ DIALOGS:
           - "&7Take it off the board"
           - "&7The item waits in your collect screen"
       PREVIEW:
-        LABEL: "&#f40d0dᴘʀᴇᴠɪᴇᴡ ᴄᴏɴᴛᴇɴᴛѕ"
-        TOOLTIP: [ ]
+        LABEL: "&#f40d0d\u2315 ᴘʀᴇᴠɪᴇᴡ"
+        TOOLTIP: [ "&7See exactly what this is" ]
       BACK:
         LABEL: "&7ʙᴀᴄᴋ"
         TOOLTIP: [ ]
@@ -279,15 +295,15 @@ DIALOGS:
 
   COLLECT:
     TITLE: "&#f40d0dᴄᴏʟʟᴇᴄᴛ"
-    COLUMNS: 3
+    COLUMNS: 2
     BODY:
-      - "&7Page &f{page}&7/&f{pages} &8| &7{count} listings, {total_items} items"
-      - ""
-      - "&8Drop buttons drop at your feet, spread over a few ticks."
+      - "&7{count} listings waiting &8\u00b7 &7{total_items} items"
+      - "&8Page {page}/{pages} \u00b7 drops land at your feet"
+      - "{separator}"
     EMPTY: "&7Nothing waiting for you."
     BUTTONS:
       LOOT:
-        LABEL: "&f{amount}x {item}{renamed_tag}"
+        LABEL: "&f{amount}\u00d7 {item}{renamed_tag}\n&8was ${price} \u00b7 {status}"
         TOOLTIP:
           - "&f{amount}x {item}"
           - "{renamed_line}"
@@ -338,24 +354,21 @@ DIALOGS:
 
   TRANSACTIONS:
     TITLE: "&#f40d0dʜɪѕᴛᴏʀʏ"
-    COLUMNS: 3
+    COLUMNS: 2
     BODY:
-      - "&7Page &f{page}&7/&f{pages} &8| &7{results} entries"
-      - ""
-      - "&7Earned: &#f40d0d${total_made} &8({sales} sales)"
-      - "&7Spent: &#f40d0d${total_spent} &8({purchases} purchases)"
-      - "&7Net: &#f40d0d${net}"
-      - "&7Search: &f{query}"
+      - "&a+ ${total_made} &8earned \u00b7 &c- ${total_spent} &8spent \u00b7 &7net &f${net}"
+      - "&8{sales} sales \u00b7 {purchases} purchases \u00b7 page {page}/{pages}"
+      - "{separator}"
     EMPTY: "&7Nothing here yet."
     BUTTONS:
       SALE:
-        LABEL: "&a+ &f{amount}x {item} &8- &#f40d0d${price}"
+        LABEL: "&a\u25b2 &f{amount}\u00d7 {item}\n&8sold to {buyer} \u00b7 &a${price}"
         TOOLTIP:
           - "&f{buyer} &7bought your &f{amount}x {item}"
           - "&7for &#f40d0d${price}"
           - "&8{time} ago"
       PURCHASE:
-        LABEL: "&c- &f{amount}x {item} &8- &#f40d0d${price}"
+        LABEL: "&c\u25bc &f{amount}\u00d7 {item}\n&8from {seller} \u00b7 &c${price}"
         TOOLTIP:
           - "&7You bought &f{amount}x {item}"
           - "&7from &f{seller} &7for &#f40d0d${price}"

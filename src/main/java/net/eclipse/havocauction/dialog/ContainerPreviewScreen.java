@@ -10,10 +10,14 @@ import net.eclipse.havocauction.util.Text;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.map.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +25,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Shows what is inside a shulker box before you buy it. Nobody should have to gamble
- * a few million on a box they cannot see into.
+ * Full preview of a listed item before buying.
+ *
+ * Shows the item large, and unpacks whatever it is carrying:
+ *   - shulker boxes render every stack inside as its own icon
+ *   - filled maps render at preview size, where hovering shows the map art itself
+ *   - enchanted items list their enchantments
+ *
+ * Nobody should have to gamble a few million on a box or a map they cannot see into.
  */
 public class ContainerPreviewScreen extends Screen {
 
@@ -44,9 +54,17 @@ public class ContainerPreviewScreen extends Screen {
         return plugin.auction().byId(listingId);
     }
 
-    private List<ItemStack> contents(Listing listing) {
+    private int previewSize() {
+        return plugin.getConfig().getInt("DIALOG.PREVIEW-ITEM-SIZE", 96);
+    }
+
+    private int contentSize() {
+        return plugin.getConfig().getInt("DIALOG.PREVIEW-CONTENT-SIZE", 40);
+    }
+
+    private List<ItemStack> containerContents(ItemStack item) {
         List<ItemStack> contents = new ArrayList<>();
-        ItemMeta meta = listing.getItem().getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         if (!(meta instanceof BlockStateMeta blockStateMeta)) return contents;
         if (!(blockStateMeta.getBlockState() instanceof ShulkerBox box)) return contents;
         for (ItemStack stack : box.getInventory().getContents()) {
@@ -68,20 +86,108 @@ public class ContainerPreviewScreen extends Screen {
             return List.of(DialogBody.plainMessage(Text.component(plugin.message("LISTING-UNAVAILABLE"))));
         }
 
+        ItemStack item = listing.getItemCopy();
         List<DialogBody> body = new ArrayList<>();
-        body.add(itemBody(listing.getItemCopy()));
 
-        List<ItemStack> contents = contents(listing);
-        if (contents.isEmpty()) {
-            body.add(DialogBody.plainMessage(Text.component(string("EMPTY", "&7This container is empty."))));
+        // The item itself, large. Tooltips are on, which is what makes a filled map show
+        // its actual art on hover rather than just the map icon.
+        body.add(Dialogs.item(item, previewSize()));
+        body.addAll(Dialogs.body(lines("BODY"), common(Placeholders.of(plugin, listing)), style()));
+
+        if (isMap(item)) {
+            body.addAll(mapDetails(item));
             return body;
         }
 
+        List<ItemStack> contents = containerContents(item);
+        if (!contents.isEmpty()) {
+            body.addAll(containerDetails(contents));
+            return body;
+        }
+
+        List<DialogBody> enchants = enchantDetails(item);
+        if (!enchants.isEmpty()) {
+            body.addAll(enchants);
+            return body;
+        }
+
+        body.add(DialogBody.plainMessage(Text.component(
+                style().text(string("EMPTY", "&7Nothing else to show for this item.")))));
+        return body;
+    }
+
+    // ------------------------------------------------------------------ maps
+
+    private boolean isMap(ItemStack item) {
+        return item.getType() == Material.FILLED_MAP;
+    }
+
+    private List<DialogBody> mapDetails(ItemStack item) {
+        List<DialogBody> body = new ArrayList<>();
+        String header = string("MAP-HEADER", "&#f40d0dMap art");
+        body.add(DialogBody.plainMessage(Text.component(style().text(header))));
+
+        String hint = string("MAP-HINT", "&7Hover the map above to see the art.");
+        body.add(DialogBody.plainMessage(Text.component(style().text(hint))));
+
+        if (!(item.getItemMeta() instanceof MapMeta meta) || !meta.hasMapView()) return body;
+        MapView view = meta.getMapView();
+        if (view == null) return body;
+
+        Map<String, String> placeholders = Map.of(
+                "id", String.valueOf(view.getId()),
+                "scale", view.getScale() == null ? "unknown" : view.getScale().name(),
+                "locked", String.valueOf(view.isLocked()),
+                "world", view.getWorld() == null ? "unknown" : view.getWorld().getName());
+
+        for (String line : Text.applyPruned(lines("MAP-LINES"), placeholders)) {
+            body.add(DialogBody.plainMessage(Text.component(style().text(line))));
+        }
+        return body;
+    }
+
+    // ------------------------------------------------------------------ containers
+
+    private List<DialogBody> containerDetails(List<ItemStack> contents) {
+        List<DialogBody> body = new ArrayList<>();
+        int limit = Math.max(1, plugin.getConfig().getInt("DIALOG.PREVIEW-MAX-CONTENTS", 27));
         String format = string("LINE", "&7- &f{amount}x {item}");
+
+        int shown = 0;
         for (ItemStack stack : contents) {
-            body.add(DialogBody.plainMessage(Text.component(Text.apply(format, Map.of(
+            if (shown++ >= limit) break;
+            // Icon plus label, so the contents look like a container rather than a list.
+            body.add(Dialogs.item(stack.clone(), contentSize()));
+            body.add(DialogBody.plainMessage(Text.component(style().text(Text.apply(format, Map.of(
                     "amount", NumberUtil.count(stack.getAmount()),
-                    "item", ItemNames.display(stack))))));
+                    "item", ItemNames.display(stack)))))));
+        }
+
+        if (contents.size() > limit) {
+            body.add(DialogBody.plainMessage(Text.component(style().text(
+                    Text.apply(string("MORE", "&8...and {count} more"),
+                            Map.of("count", String.valueOf(contents.size() - limit)))))));
+        }
+        return body;
+    }
+
+    // ------------------------------------------------------------------ enchantments
+
+    private List<DialogBody> enchantDetails(ItemStack item) {
+        List<DialogBody> body = new ArrayList<>();
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return body;
+
+        Map<Enchantment, Integer> enchants = meta instanceof EnchantmentStorageMeta storage
+                ? storage.getStoredEnchants()
+                : meta.getEnchants();
+        if (enchants.isEmpty()) return body;
+
+        String format = string("ENCHANT-LINE", "&7- &f{enchantment} {level}");
+        for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+            body.add(DialogBody.plainMessage(Text.component(style().text(Text.apply(format, Map.of(
+                    "enchantment", ItemNames.enchantment(entry.getKey()),
+                    "level", Text.roman(entry.getValue())))))));
         }
         return body;
     }

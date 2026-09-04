@@ -85,7 +85,7 @@ public class ListingScreen extends Screen {
         Map<String, String> placeholders = placeholders(listing);
         buttons.add(configButton("CONFIRM", placeholders, (view, audience) -> purchase()));
 
-        if (listing.isContainer()) {
+        if (listing.isPreviewable()) {
             buttons.add(configButton("PREVIEW", placeholders, (view, audience) -> {
                 click();
                 new ContainerPreviewScreen(plugin, player, listingId,

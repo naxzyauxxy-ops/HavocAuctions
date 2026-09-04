@@ -47,6 +47,10 @@ public class AuctionManager {
 
     private final AtomicLong version = new AtomicLong();
 
+    /** Collapses a burst of changes into one write instead of one per action. */
+    private final java.util.concurrent.atomic.AtomicBoolean flushQueued =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
     public AuctionManager(HavocAuction plugin, SqlStorage storage) {
         this.plugin = plugin;
         this.storage = storage;
@@ -99,7 +103,11 @@ public class AuctionManager {
         }
     }
 
-    public void flush() {
+    /**
+     * Writes pending changes. Synchronized because a scheduled flush and an immediate
+     * one can otherwise interleave batches on a single JDBC connection.
+     */
+    public synchronized void flush() {
         if (!dirty.isEmpty()) {
             List<UUID> ids = new ArrayList<>(dirty);
             dirty.removeAll(ids);
@@ -117,9 +125,27 @@ public class AuctionManager {
         }
     }
 
+    /**
+     * Asks for a write as soon as possible.
+     *
+     * Anything that hands a player an item or moves money must not sit in memory waiting
+     * for the periodic flush: if the server dies before that flush, the player keeps the
+     * item and the record comes back on restart, which is a duplication bug. Bursts are
+     * collapsed so a busy server still writes in batches.
+     */
+    private void requestFlush() {
+        if (flushQueued.compareAndSet(false, true)) {
+            plugin.async(() -> {
+                flushQueued.set(false);
+                flush();
+            });
+        }
+    }
+
     private void persist(Listing listing) {
         dirty.add(listing.getId());
         touch();
+        requestFlush();
     }
 
     private void remove(Listing listing) {
@@ -127,6 +153,7 @@ public class AuctionManager {
         dirty.remove(listing.getId());
         pendingDeletes.add(listing.getId());
         touch();
+        requestFlush();
     }
 
     // ------------------------------------------------------------------ lookups

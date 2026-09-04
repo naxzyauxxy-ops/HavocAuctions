@@ -40,6 +40,15 @@ AUCTION:
   HISTORY-KEEP-DAYS: 30
   UPKEEP-SECONDS: 60
   SAVE-INTERVAL-SECONDS: 30
+  # Re-read config.yml and dialogs.yml when they change on disk, so edits apply without
+  # a restart. 0 disables the watcher. Note this reloads settings and menu text only -
+  # it does not touch orders, listings or money.
+  RELOAD-WATCH-SECONDS: 5
+  # On startup, add any settings a plugin update introduced into your existing
+  # config.yml and dialogs.yml. Your values are never changed and nothing is removed;
+  # the previous file is kept as config.yml.bak. Turn off only if you manage the files
+  # yourself and would rather paste new keys in by hand.
+  AUTO-UPDATE-CONFIG: true
   DROP:
     MAX-STACKS-PER-TICK: 24
     PAGE-BATCH: 5
@@ -48,8 +57,13 @@ DIALOG:
   COLUMNS: 3
   BUTTON-WIDTH: 200
   ITEM-SIZE: 48
-  LISTINGS-PER-PAGE: 21
-  COLLECT-PER-PAGE: 15
+  # Size of the item on the preview screen, and of each stack inside a container.
+  PREVIEW-ITEM-SIZE: 96
+  PREVIEW-CONTENT-SIZE: 40
+  # Cap on how many stacks a container preview draws.
+  PREVIEW-MAX-CONTENTS: 27
+  LISTINGS-PER-PAGE: 10
+  COLLECT-PER-PAGE: 10
 
 BLACKLIST-ITEMS:
   - "COMMAND_BLOCK"

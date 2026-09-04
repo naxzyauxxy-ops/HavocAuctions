@@ -108,7 +108,7 @@ public class TransactionsScreen extends Screen {
             boolean sold = listing.getSeller().equals(player.getUniqueId());
             buttons.add(configButton(sold ? "SALE" : "PURCHASE", Placeholders.of(plugin, listing),
                     (view, audience) -> {
-                        if (listing.isContainer()) {
+                        if (listing.isPreviewable()) {
                             click();
                             new ContainerPreviewScreen(plugin, player, listing.getId(),
                                     () -> new TransactionsScreen(plugin, player).show()).show();

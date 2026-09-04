@@ -97,6 +97,33 @@ Search uses the dialog's own text field, so it goes client-to-server with the bu
 and never appears in chat or in chat-logging plugins. Same for the history search and the
 sell price field.
 
+## Item previews
+
+Every listing shows the item as a real icon, not just text: on the buy screen, your
+listings, and the preview screen. Size is configurable.
+
+The **Preview** button appears on any listing that has something more to show — a shulker,
+a map, enchantments, or durability. Plain cobblestone does not get a button that would tell
+you nothing. Preview shows:
+
+- **Shulker boxes** — every stack inside, each as its own icon with a label
+- **Filled maps** — the map at preview size, plus map id, scale, world and locked state.
+  Hovering the icon shows the map art itself, since Minecraft renders map previews in item
+  tooltips
+- **Enchanted items** — the full enchantment list, including stored enchants on books
+- **Damaged items** — durability remaining
+
+```yaml
+DIALOG:
+  PREVIEW-ITEM-SIZE: 96
+  PREVIEW-CONTENT-SIZE: 40
+  PREVIEW-MAX-CONTENTS: 27
+```
+
+**On right-click:** dialog buttons only have one click action — the API has no separate
+right-click, and Geyser could not map it to a Bedrock form button anyway. The Preview
+button is that feature, one click instead of two.
+
 ## Renamed items and search
 
 Search matches the **real item type**, never the custom display name. Otherwise anyone can
@@ -146,6 +173,52 @@ leaves your hand once the listing is stored.
 
 The Sell screen also has a **per-item** button: type `500`, hit it, and a stack of 64 is
 priced at 32,000.
+
+## Durability of data, and why writes are immediate
+
+Anything that hands a player an item or moves money is written to the database straight
+away, not on the periodic timer. The timer still exists for low-risk updates, and bursts
+are collapsed into a single batch, but the window between "player has the item" and
+"database knows" is now milliseconds rather than up to 30 seconds.
+
+That gap was a real duplication bug: on a crash, `kill`, or a plugin-manager unload, the
+unwritten records came back on restart while the player already had the goods.
+
+`SAVE-INTERVAL-SECONDS` is now only a safety net. Lowering it is no longer how you protect
+against duplication.
+
+## Startup and load order
+
+The plugin no longer disables itself when Vault has no economy provider yet. Economy
+plugins register their Vault service during their own enable, so load order alone could
+leave this plugin dead until it was reloaded by hand. It now waits, retrying once a second
+for a minute, and logs when it hooks in. Commands report the missing economy until then.
+
+## Live config reloading
+
+`config.yml` and `dialogs.yml` are re-read when their timestamps change, so edits apply
+without a restart or a reload command:
+
+```yaml
+RELOAD-WATCH-SECONDS: 5   # 0 disables
+```
+
+This covers settings and menu text only. It does not touch orders, listings or money, and
+it is unrelated to duplication.
+
+## Updating
+
+New settings from a plugin update are written into your existing `config.yml` and
+`dialogs.yml` on startup. Your values are never changed, nothing is removed, and the
+previous file is saved as `config.yml.bak`. The console lists every key it added.
+
+```yaml
+AUTO-UPDATE-CONFIG: true   # set false to manage the files yourself
+```
+
+Two things it deliberately does not do: it will not change a value you have already set,
+and it will not delete keys it does not recognise, since those are assumed to be yours.
+So a *new* setting appears by itself, but a *changed default* is still yours to apply.
 
 ## Performance
 

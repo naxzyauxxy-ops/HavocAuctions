@@ -5,6 +5,7 @@ import net.eclipse.havocauction.util.ItemSerializer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
 import java.util.UUID;
 
@@ -215,5 +216,22 @@ public class Listing {
     /** True for shulker boxes and other containers worth previewing before buying. */
     public boolean isContainer() {
         return material.name().endsWith("SHULKER_BOX");
+    }
+
+    public boolean isMap() {
+        return material == Material.FILLED_MAP;
+    }
+
+    /**
+     * Whether the preview screen has anything to add: contents, map art, enchantments,
+     * or durability. Plain items do not get a preview button they would learn nothing from.
+     */
+    public boolean isPreviewable() {
+        if (isContainer() || isMap() || hasDurability()) return true;
+        ItemStack item = getItem();
+        if (item.getItemMeta() instanceof EnchantmentStorageMeta storage) {
+            return storage.hasStoredEnchants();
+        }
+        return item.getItemMeta() != null && !item.getItemMeta().getEnchants().isEmpty();
     }
 }

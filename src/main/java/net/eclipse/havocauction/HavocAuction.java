@@ -12,6 +12,7 @@ import net.eclipse.havocauction.model.SortOption;
 import net.eclipse.havocauction.storage.LegacyImporter;
 import net.eclipse.havocauction.storage.SqlStorage;
 import net.eclipse.havocauction.util.Category;
+import net.eclipse.havocauction.util.ConfigUpdater;
 import net.eclipse.havocauction.util.NumberUtil;
 import net.eclipse.havocauction.util.Text;
 import org.bukkit.Bukkit;
@@ -50,15 +51,19 @@ public final class HavocAuction extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        syncConfigFiles();
         reloadDialogs();
         loadBlockedItems();
         NumberUtil.setAbbreviate(getConfig().getBoolean("AUCTION.ABBREVIATE-NUMBERS", true));
 
         economy = new EconomyHook(this);
         if (!economy.setup()) {
-            getLogger().severe("Disabling HavocAuction - Vault economy is required.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+            // Do not disable. Economy providers such as EssentialsX register their Vault
+            // service during their own enable, so if they load after this plugin the
+            // service simply is not there yet. Disabling here is why the plugin appeared
+            // dead until it was reloaded by hand. Wait for it instead.
+            getLogger().warning("No Vault economy registered yet - waiting for one.");
+            waitForEconomy();
         }
 
         storage = new SqlStorage(this);
@@ -109,6 +114,8 @@ public final class HavocAuction extends JavaPlugin {
             profiles.flush();
         }, saveTicks, saveTicks);
 
+        watchConfigFiles();
+
         getLogger().info("HavocAuction enabled. Dialogs need Paper/Purpur 1.21.7+ and a 1.21.6+ client.");
     }
 
@@ -144,6 +151,54 @@ public final class HavocAuction extends JavaPlugin {
         }
     }
 
+    /** Retries the Vault hook until a provider shows up, then stops looking. */
+    private void waitForEconomy() {
+        new BukkitRunnable() {
+            private int attempts = 0;
+
+            @Override
+            public void run() {
+                if (economy.isReady()) {
+                    cancel();
+                    return;
+                }
+                if (economy.setup()) {
+                    getLogger().info("Vault economy found - fully enabled.");
+                    cancel();
+                    return;
+                }
+                if (++attempts >= 60) {
+                    getLogger().severe("Still no Vault economy after a minute. "
+                            + "Install one, then run the reload command.");
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this, 20L, 20L);
+    }
+
+    /**
+     * Reloads config and dialogs when the files change on disk, so edits apply without a
+     * restart or a manual reload.
+     */
+    private void watchConfigFiles() {
+        int seconds = getConfig().getInt("AUCTION.RELOAD-WATCH-SECONDS", 5);
+        if (seconds <= 0) return;
+
+        File configFile = new File(getDataFolder(), "config.yml");
+        File dialogFile = new File(getDataFolder(), "dialogs.yml");
+        long[] stamps = {configFile.lastModified(), dialogFile.lastModified()};
+
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            long config = configFile.lastModified();
+            long dialog = dialogFile.lastModified();
+            if (config == stamps[0] && dialog == stamps[1]) return;
+            stamps[0] = config;
+            stamps[1] = dialog;
+            reloadEverything();
+            getLogger().info("Config changed on disk - reloaded.");
+        }, seconds * 20L, seconds * 20L);
+    }
+
     @Override
     public void onDisable() {
         if (profiles != null) profiles.flush();
@@ -155,6 +210,21 @@ public final class HavocAuction extends JavaPlugin {
     }
 
     // ------------------------------------------------------------------ config
+
+    /**
+     * Brings config.yml and dialogs.yml up to date with this build before anything reads
+     * them, so a jar update never needs settings pasted in by hand.
+     */
+    private void syncConfigFiles() {
+        if (!getConfig().getBoolean("AUCTION.AUTO-UPDATE-CONFIG", true)) return;
+
+        ConfigUpdater.Result config = ConfigUpdater.update(this, "config.yml");
+        if (config.changed()) reloadConfig();
+        ConfigUpdater.report(this, config);
+
+        ConfigUpdater.Result dialogs = ConfigUpdater.update(this, "dialogs.yml");
+        ConfigUpdater.report(this, dialogs);
+    }
 
     public void reloadDialogs() {
         File file = new File(getDataFolder(), "dialogs.yml");
