@@ -153,6 +153,49 @@ each player's choice, and this button remains the fallback for everyone else.
 right-click, and Geyser could not map it to a Bedrock form button anyway. The Preview
 button is that feature, one click instead of two.
 
+## Searching
+
+`/ah <anything>` searches straight from chat — no menu, no typing into a dialog field:
+
+```
+/ah elytra
+/ah naxzyauxxy signed book
+/ah sharpness 5
+/ah map art
+```
+
+**Every word has to match**, so `naxzyauxxy signed book` finds books connected to that
+player, not everything containing "book". Words are matched against:
+
+- the real item type and material name
+- the seller's name
+- configured aliases
+- enchantments, by name and level (`sharpness 5` and `sharpness v` both work)
+- **a signed book's author** — who actually signed it, which the server sets and a player
+  cannot fake
+
+Custom item names and book titles are still excluded, because both are attacker-controlled
+text. Author is not: you can only sign a book as yourself.
+
+### Aliases
+
+Players search for "signed book", not "Written Book". Aliases add extra handles without
+changing what an item is called:
+
+```yaml
+AUCTION:
+  SEARCH-ALIASES:
+    WRITTEN_BOOK: [ "signed book", "book" ]
+    FILLED_MAP: [ "map art", "mapart", "map" ]
+    ENCHANTED_GOLDEN_APPLE: [ "god apple", "notch apple", "gapple" ]
+```
+
+Each listing bakes its aliases into a search index once when it loads, so searching never
+walks item metadata. Editing aliases applies to new listings immediately and to existing
+ones after a restart.
+
+`/orders <anything>` works the same way, matching item type and the order owner.
+
 ## Renamed items and search
 
 Search matches the **real item type**, never the custom display name. Otherwise anyone can

@@ -1,12 +1,20 @@
 package net.eclipse.havocauction.model;
 
+import net.eclipse.havocauction.util.ItemAliases;
 import net.eclipse.havocauction.util.ItemNames;
+import net.eclipse.havocauction.util.Text;
 import net.eclipse.havocauction.util.ItemSerializer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 /** One auction listing. Also doubles as the transaction record once sold. */
@@ -24,6 +32,18 @@ public class Listing {
     private final String typeName;
     /** Non-null only when the seller renamed the item. */
     private final String customName;
+    /**
+     * Everything trustworthy a search may match, lowercased and pre-joined: the real type,
+     * material name, configured aliases, enchantments, and a signed book's author.
+     *
+     * Built once at load so searching never decodes an item or walks its metadata.
+     * Attacker-controlled text - custom names, book titles - is deliberately kept out and
+     * matched separately, so renaming a block of dirt cannot answer an elytra search.
+     */
+    private final String searchIndex;
+    /** Who signed the book, when it is one. */
+    private final String bookAuthor;
+    private final String bookTitle;
     private final Material material;
     private final int amount;
     private final int damage;
@@ -64,6 +84,60 @@ public class Listing {
         this.damage = item.getItemMeta() instanceof Damageable damageable && damageable.hasDamage()
                 ? damageable.getDamage()
                 : 0;
+
+        ItemMeta meta = item.getItemMeta();
+        BookMeta book = meta instanceof BookMeta bookMeta ? bookMeta : null;
+        this.bookAuthor = book != null && book.hasAuthor() ? book.getAuthor() : null;
+        this.bookTitle = book != null && book.hasTitle() ? book.getTitle() : null;
+        this.searchIndex = buildSearchIndex(item, meta);
+    }
+
+    private String buildSearchIndex(ItemStack item, ItemMeta meta) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(typeName).append(' ');
+        sb.append(item.getType().name().replace('_', ' ')).append(' ');
+        sb.append(getSellerName()).append(' ');
+
+        for (String alias : ItemAliases.of(item.getType())) {
+            sb.append(alias).append(' ');
+        }
+
+        Map<Enchantment, Integer> enchants = meta instanceof EnchantmentStorageMeta storage
+                ? storage.getStoredEnchants()
+                : (meta == null ? Map.of() : meta.getEnchants());
+        for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+            sb.append(ItemNames.enchantment(entry.getKey())).append(' ')
+              .append(entry.getValue()).append(' ')
+              .append(Text.roman(entry.getValue())).append(' ');
+        }
+
+        if (bookAuthor != null) sb.append(bookAuthor).append(' ');
+        return sb.toString().toLowerCase(Locale.ROOT);
+    }
+
+    public String getBookAuthor() {
+        return bookAuthor;
+    }
+
+    /**
+     * Every token must match something. "naxzyauxxy signed book" therefore needs the
+     * author or seller *and* the item type, rather than anything that mentions "book".
+     */
+    public boolean matchesSearch(List<String> tokens, boolean includeCustomText) {
+        if (tokens.isEmpty()) return true;
+
+        String extra = "";
+        if (includeCustomText) {
+            extra = ((customName == null ? "" : customName) + ' '
+                    + (bookTitle == null ? "" : bookTitle)).toLowerCase(Locale.ROOT);
+        }
+
+        for (String token : tokens) {
+            if (searchIndex.contains(token)) continue;
+            if (!extra.isEmpty() && extra.contains(token)) continue;
+            return false;
+        }
+        return true;
     }
 
     public static Listing create(UUID seller, String sellerName, ItemStack item,

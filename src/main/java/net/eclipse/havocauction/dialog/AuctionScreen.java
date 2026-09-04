@@ -40,7 +40,7 @@ public class AuctionScreen extends Screen {
         long version = plugin.auction().version();
         if (!session.isBoardStale(version)) return session.getCachedBoard();
 
-        String lowered = session.getQuery().toLowerCase(Locale.ROOT);
+        List<String> tokens = tokenise(session.getQuery());
         Category filter = session.getFilter();
         // Off by default: matching renamed items would let a block of dirt called
         // "Elytra" answer an elytra search.
@@ -49,7 +49,7 @@ public class AuctionScreen extends Screen {
         List<Listing> matched = new ArrayList<>();
         for (Listing listing : plugin.auction().board()) {
             if (!filter.matches(listing.getMaterial())) continue;
-            if (!lowered.isEmpty() && !matches(listing, lowered, searchCustomNames)) continue;
+            if (!listing.matchesSearch(tokens, searchCustomNames)) continue;
             matched.add(listing);
         }
         matched.sort(session.getSort().getComparator());
@@ -57,11 +57,14 @@ public class AuctionScreen extends Screen {
         return matched;
     }
 
-    private boolean matches(Listing listing, String query, boolean searchCustomNames) {
-        if (listing.getTypeName().toLowerCase(Locale.ROOT).contains(query)) return true;
-        if (listing.getSellerName().toLowerCase(Locale.ROOT).contains(query)) return true;
-        return searchCustomNames && listing.getCustomName() != null
-                && listing.getCustomName().toLowerCase(Locale.ROOT).contains(query);
+    /** Splits a query into words; every word has to match for a listing to show. */
+    static List<String> tokenise(String query) {
+        if (query == null || query.isBlank()) return List.of();
+        List<String> tokens = new ArrayList<>();
+        for (String part : query.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
+            if (!part.isBlank()) tokens.add(part);
+        }
+        return tokens;
     }
 
     private Map<String, String> screen(List<Listing> results) {

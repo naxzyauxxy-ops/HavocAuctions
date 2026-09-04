@@ -13,6 +13,7 @@ import net.eclipse.havocauction.model.SortOption;
 import net.eclipse.havocauction.storage.LegacyImporter;
 import net.eclipse.havocauction.storage.SqlStorage;
 import net.eclipse.havocauction.util.Category;
+import net.eclipse.havocauction.util.ItemAliases;
 import net.eclipse.havocauction.util.ConfigUpdater;
 import net.eclipse.havocauction.util.NumberUtil;
 import net.eclipse.havocauction.util.Text;
@@ -57,6 +58,8 @@ public final class HavocAuction extends JavaPlugin {
         reloadDialogs();
         loadBlockedItems();
         NumberUtil.setAbbreviate(getConfig().getBoolean("AUCTION.ABBREVIATE-NUMBERS", true));
+        // Loaded before listings, because each one bakes its aliases into a search index.
+        ItemAliases.load(getConfig().getConfigurationSection("AUCTION.SEARCH-ALIASES"));
 
         economy = new EconomyHook(this);
         if (!economy.setup()) {
@@ -254,6 +257,9 @@ public final class HavocAuction extends JavaPlugin {
         reloadDialogs();
         loadBlockedItems();
         NumberUtil.setAbbreviate(getConfig().getBoolean("AUCTION.ABBREVIATE-NUMBERS", true));
+        // Existing listings keep the index built at load; new aliases apply to new
+        // listings and after a restart.
+        ItemAliases.load(getConfig().getConfigurationSection("AUCTION.SEARCH-ALIASES"));
     }
 
     public boolean isBlocked(Material material) {

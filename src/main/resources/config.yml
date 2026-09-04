@@ -33,6 +33,26 @@ AUCTION:
   # can rename a block of dirt to "Elytra" and have it answer an elytra search.
   # Searching always matches the real item type and the seller's name.
   SEARCH-CUSTOM-NAMES: false
+  # Extra words a search should match for an item. Players look for "signed book", not
+  # "Written Book". Every word you type must match something, so "notch signed book"
+  # finds books signed by or sold by notch, not everything containing "book".
+  SEARCH-ALIASES:
+    WRITTEN_BOOK: [ "signed book", "book" ]
+    WRITABLE_BOOK: [ "book and quill", "unsigned book", "book" ]
+    ENCHANTED_BOOK: [ "enchanted book", "ebook", "book" ]
+    FILLED_MAP: [ "map art", "mapart", "map" ]
+    ELYTRA: [ "elytra", "wings" ]
+    TOTEM_OF_UNDYING: [ "totem", "pop" ]
+    ENDER_PEARL: [ "pearl", "pearls" ]
+    EXPERIENCE_BOTTLE: [ "xp bottle", "bottle o enchanting" ]
+    GOLDEN_APPLE: [ "gapple" ]
+    ENCHANTED_GOLDEN_APPLE: [ "god apple", "notch apple", "gapple" ]
+    NETHERITE_INGOT: [ "netherite", "ingot" ]
+    ANCIENT_DEBRIS: [ "debris", "netherite" ]
+    SHULKER_BOX: [ "shulker", "box" ]
+    NETHER_STAR: [ "star" ]
+    TRIDENT: [ "trident" ]
+    MACE: [ "mace" ]
   # Show 1.23m instead of 1,230,000. Input always accepts both.
   ABBREVIATE-NUMBERS: true
   # Sold and collected rows are kept this long so the transaction log has something to
@@ -135,6 +155,7 @@ BEDROCK:
 
 MESSAGES:
   PREFIX: ""
+  SEARCHING: "&#f40d0dSearching for &f{query}&#f40d0d..."
   MAP-PREVIEW-START: "&#f40d0dCheck your off hand - the map is yours to look at for {seconds}s."
   MAP-PREVIEW-END: "&#f40d0dMap preview over."
   SEARCH-USE-COMMAND: "&#f40d0dSearch box came back empty. Try &f/ah search <text>&#f40d0d instead."

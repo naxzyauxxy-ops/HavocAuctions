@@ -105,12 +105,19 @@ public class AuctionCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        // Same reason as /orders search: dialog text fields are unreliable on Bedrock.
-        if (args.length > 0 && args[0].equalsIgnoreCase("search")) {
-            String query = args.length > 1
-                    ? String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length))
+        // Anything that is not a sub-command is treated as a search, so "/ah elytra" or
+        // "/ah notch signed book" just works. This also covers Bedrock, where typing into
+        // a dialog field is unreliable.
+        if (args.length > 0) {
+            int from = args[0].equalsIgnoreCase("search") ? 1 : 0;
+            String query = args.length > from
+                    ? String.join(" ", java.util.Arrays.copyOfRange(args, from, args.length))
                     : "";
             plugin.sessions().get(player).setQuery(query);
+            if (!query.isEmpty()) {
+                player.sendMessage(Text.component(Text.apply(plugin.message("SEARCHING"),
+                        java.util.Map.of("query", query))));
+            }
         }
 
         new AuctionScreen(plugin, player).show();
