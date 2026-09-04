@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
 
@@ -99,6 +100,11 @@ public class ContainerPreviewScreen extends Screen {
             return body;
         }
 
+        if (item.getItemMeta() instanceof BookMeta book) {
+            body.addAll(bookDetails(item, book));
+            return body;
+        }
+
         List<ItemStack> contents = containerContents(item);
         if (!contents.isEmpty()) {
             body.addAll(containerDetails(contents));
@@ -142,6 +148,48 @@ public class ContainerPreviewScreen extends Screen {
 
         for (String line : Text.applyPruned(lines("MAP-LINES"), placeholders)) {
             body.add(DialogBody.plainMessage(Text.component(style().text(line))));
+        }
+        return body;
+    }
+
+    // ------------------------------------------------------------------ books
+
+    /**
+     * Who signed it, and what generation it is.
+     *
+     * Worth showing before a purchase: a signed original by a known player is a very
+     * different thing from a copy of a copy, and the two look identical on the board.
+     */
+    private List<DialogBody> bookDetails(ItemStack item, BookMeta book) {
+        List<DialogBody> body = new ArrayList<>();
+        boolean signed = item.getType() == Material.WRITTEN_BOOK;
+
+        body.add(DialogBody.plainMessage(Text.component(style().text(
+                string(signed ? "BOOK-HEADER" : "BOOK-HEADER-UNSIGNED",
+                        signed ? "&#f40d0dSigned book" : "&#f40d0dBook and quill")))));
+
+        Map<String, String> placeholders = Map.of(
+                "title", book.hasTitle() && book.getTitle() != null ? book.getTitle() : "untitled",
+                "author", book.hasAuthor() && book.getAuthor() != null ? book.getAuthor() : "unsigned",
+                "generation", book.hasGeneration() && book.getGeneration() != null
+                        ? Text.pretty(book.getGeneration().name()) : "Original",
+                "pages", String.valueOf(book.getPageCount()));
+
+        for (String line : Text.applyPruned(lines(signed ? "BOOK-LINES" : "BOOK-LINES-UNSIGNED"),
+                placeholders)) {
+            body.add(DialogBody.plainMessage(Text.component(style().text(line))));
+        }
+
+        // A taste of the contents, capped so a long book cannot flood the screen.
+        int limit = Math.max(0, plugin.getConfig().getInt("DIALOG.PREVIEW-BOOK-CHARS", 160));
+        if (limit > 0 && book.getPageCount() > 0) {
+            String first = book.getPage(1);
+            if (first != null && !first.isBlank()) {
+                String snippet = first.replace("\n", " ").trim();
+                if (snippet.length() > limit) snippet = snippet.substring(0, limit) + "...";
+                body.add(DialogBody.plainMessage(Text.component(style().text(
+                        Text.apply(string("BOOK-PAGE", "&8\"{page}\""), Map.of("page", snippet))))));
+            }
         }
         return body;
     }

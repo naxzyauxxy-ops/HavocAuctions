@@ -62,8 +62,10 @@ DIALOG:
   PREVIEW-CONTENT-SIZE: 40
   # Cap on how many stacks a container preview draws.
   PREVIEW-MAX-CONTENTS: 27
-  LISTINGS-PER-PAGE: 10
-  COLLECT-PER-PAGE: 10
+  # Characters of a book's first page shown in the preview. 0 hides it.
+  PREVIEW-BOOK-CHARS: 160
+  LISTINGS-PER-PAGE: 21
+  COLLECT-PER-PAGE: 15
 
 BLACKLIST-ITEMS:
   - "COMMAND_BLOCK"

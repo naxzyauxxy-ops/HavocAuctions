@@ -110,6 +110,8 @@ you nothing. Preview shows:
 - **Filled maps** — the map at preview size, plus map id, scale, world and locked state.
   Hovering the icon shows the map art itself, since Minecraft renders map previews in item
   tooltips
+- **Signed books** — title, who signed it, generation (original vs copy of a copy), page
+  count, and a snippet of the first page
 - **Enchanted items** — the full enchantment list, including stored enchants on books
 - **Damaged items** — durability remaining
 
@@ -118,6 +120,7 @@ DIALOG:
   PREVIEW-ITEM-SIZE: 96
   PREVIEW-CONTENT-SIZE: 40
   PREVIEW-MAX-CONTENTS: 27
+  PREVIEW-BOOK-CHARS: 160
 ```
 
 **On right-click:** dialog buttons only have one click action — the API has no separate

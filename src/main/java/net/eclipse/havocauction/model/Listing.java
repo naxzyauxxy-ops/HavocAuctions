@@ -222,12 +222,16 @@ public class Listing {
         return material == Material.FILLED_MAP;
     }
 
+    public boolean isBook() {
+        return material == Material.WRITTEN_BOOK || material == Material.WRITABLE_BOOK;
+    }
+
     /**
      * Whether the preview screen has anything to add: contents, map art, enchantments,
      * or durability. Plain items do not get a preview button they would learn nothing from.
      */
     public boolean isPreviewable() {
-        if (isContainer() || isMap() || hasDurability()) return true;
+        if (isContainer() || isMap() || isBook() || hasDurability()) return true;
         ItemStack item = getItem();
         if (item.getItemMeta() instanceof EnchantmentStorageMeta storage) {
             return storage.hasStoredEnchants();
