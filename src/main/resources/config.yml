@@ -64,6 +64,9 @@ DIALOG:
   PREVIEW-MAX-CONTENTS: 27
   # Characters of a book's first page shown in the preview. 0 hides it.
   PREVIEW-BOOK-CHARS: 160
+  # Seconds the map is placed in the player's off hand so they can see the art.
+  # A vanilla client cannot render map art any other way.
+  MAP-PREVIEW-SECONDS: 10
   LISTINGS-PER-PAGE: 21
   COLLECT-PER-PAGE: 15
 
@@ -132,6 +135,8 @@ BEDROCK:
 
 MESSAGES:
   PREFIX: ""
+  MAP-PREVIEW-START: "&#f40d0dCheck your off hand - the map is yours to look at for {seconds}s."
+  MAP-PREVIEW-END: "&#f40d0dMap preview over."
   SEARCH-USE-COMMAND: "&#f40d0dSearch box came back empty. Try &f/ah search <text>&#f40d0d instead."
   SELL-USE-COMMAND: "&#f40d0dPrice box came back empty. Try &f/ah sell <price>&#f40d0d instead."
   NO-PERMISSION: "&#f40d0dYou don't have permission to do that."

@@ -6,6 +6,7 @@ import net.eclipse.havocauction.integration.AuctionPlaceholders;
 import net.eclipse.havocauction.economy.EconomyHook;
 import net.eclipse.havocauction.manager.AuctionManager;
 import net.eclipse.havocauction.manager.DropJob;
+import net.eclipse.havocauction.manager.MapPreview;
 import net.eclipse.havocauction.manager.Profiles;
 import net.eclipse.havocauction.manager.SessionManager;
 import net.eclipse.havocauction.model.SortOption;
@@ -45,6 +46,7 @@ public final class HavocAuction extends JavaPlugin {
     private Profiles profiles;
     private SessionManager sessions;
     private LegacyImporter importer;
+    private MapPreview mapPreview;
 
     private final Set<Material> blocked = new HashSet<>();
 
@@ -86,6 +88,9 @@ public final class HavocAuction extends JavaPlugin {
 
         sessions = new SessionManager();
         getServer().getPluginManager().registerEvents(sessions, this);
+
+        mapPreview = new MapPreview(this);
+        getServer().getPluginManager().registerEvents(mapPreview, this);
 
         PluginCommand command = getCommand("auction");
         if (command != null) {
@@ -298,6 +303,10 @@ public final class HavocAuction extends JavaPlugin {
 
     public LegacyImporter importer() {
         return importer;
+    }
+
+    public MapPreview mapPreview() {
+        return mapPreview;
     }
 
     // ------------------------------------------------------------------ scheduling

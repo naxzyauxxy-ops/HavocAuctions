@@ -165,12 +165,18 @@ DIALOGS:
       - "&8Not signed, so it can still be edited."
     BOOK-PAGE: "&8\"{page}\""
     MAP-HEADER: "&#f40d0dMap art"
-    MAP-HINT: "&7Hover the map above to see the art itself."
+    MAP-HINT: "&7Click below to hold it and see the art."
     MAP-LINES:
       - "&7Map &8#&f{id} &8| &7Scale: &f{scale}"
       - "&7World: &f{world} &8| &7Locked: &f{locked}"
     EMPTY: "&7Nothing else to show for this item."
     BUTTONS:
+      VIEW-MAP:
+        LABEL: "&#f40d0dᴠɪᴇᴡ ᴍᴀᴘ ᴀʀᴛ"
+        TOOLTIP:
+          - "&7Puts the map in your off hand"
+          - "&7for a few seconds so you can see it"
+          - "&8It cannot be dropped or kept."
       BACK:
         LABEL: "&7ʙᴀᴄᴋ"
         TOOLTIP: [ ]

@@ -107,9 +107,7 @@ a map, enchantments, or durability. Plain cobblestone does not get a button that
 you nothing. Preview shows:
 
 - **Shulker boxes** — every stack inside, each as its own icon with a label
-- **Filled maps** — the map at preview size, plus map id, scale, world and locked state.
-  Hovering the icon shows the map art itself, since Minecraft renders map previews in item
-  tooltips
+- **Filled maps** — map id, scale, world and locked state, plus a **View Map Art** button
 - **Signed books** — title, who signed it, generation (original vs copy of a copy), page
   count, and a snippet of the first page
 - **Enchanted items** — the full enchantment list, including stored enchants on books
@@ -122,6 +120,34 @@ DIALOG:
   PREVIEW-MAX-CONTENTS: 27
   PREVIEW-BOOK-CHARS: 160
 ```
+
+### Map art
+
+A vanilla client only draws map art for a map it is actually holding. It cannot be drawn
+in a dialog or an item tooltip — the client-side mods that add map tooltips exist precisely
+because the game does not do it, and a server plugin cannot make the client render
+something it has no code for.
+
+So **View Map Art** lends you the map: it goes into your off hand for ten seconds and is
+then taken back. That works on any client, Java or Bedrock, with no mods.
+
+The loaned map is fenced in, because a borrowed item is a duplication risk:
+
+- tagged in its item data, so it can always be identified
+- cannot be dropped, moved, swapped or clicked
+- removed from your drops if you die holding it
+- returned on logout, and purged on login in case the server stopped mid-preview
+- your original off-hand item is restored, or given back to your inventory if the slot got
+  taken in the meantime
+
+```yaml
+DIALOG:
+  MAP-PREVIEW-SECONDS: 10
+```
+
+If your players are on Fabric or Forge, the [Map Tooltip](https://modrinth.com/mod/map-tooltip)
+client mod shows map art on hover with no borrowing at all. It is client-side, so it is
+each player's choice, and this button remains the fallback for everyone else.
 
 **On right-click:** dialog buttons only have one click action — the API has no separate
 right-click, and Geyser could not map it to a Bedrock form button anyway. The Preview

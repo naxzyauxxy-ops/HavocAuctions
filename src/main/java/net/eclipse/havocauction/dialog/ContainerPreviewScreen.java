@@ -242,6 +242,20 @@ public class ContainerPreviewScreen extends Screen {
 
     @Override
     protected List<ActionButton> buttons() {
-        return List.of(backButton("BACK", Map.of(), onBack));
+        Listing listing = listing();
+        List<ActionButton> buttons = new ArrayList<>();
+
+        // A vanilla client only draws map art for a map it is holding, so the only way to
+        // show it is to lend the map for a few seconds.
+        if (listing != null && listing.isMap()) {
+            buttons.add(configButton("VIEW-MAP", Placeholders.of(plugin, listing),
+                    (view, audience) -> {
+                        click();
+                        plugin.mapPreview().show(player, listing.getItemCopy());
+                    }));
+        }
+
+        buttons.add(backButton("BACK", Map.of(), onBack));
+        return buttons;
     }
 }
